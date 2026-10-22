@@ -12,7 +12,7 @@
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-    body { background-color: #0d0d0e; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
+    body { background-color: #0d0d0e; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 12px; }
 
     .view-screen { width: 100%; display: flex; justify-content: center; align-items: center; }
     .hidden { display: none !important; }
@@ -61,70 +61,135 @@
     .demo-hint { margin-top: 24px; font-size: 12px; color: #63646c; }
     .demo-hint strong { color: #a1a2a9; }
 
-    /* DASHBOARD PRINCIPAL RESPONSIVO */
-    .app-container { display: flex; width: 100%; max-width: 960px; gap: 16px; min-height: 520px; }
-    .sidebar { width: 240px; background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 20px 14px; display: flex; flex-direction: column; flex-shrink: 0; justify-content: space-between; }
-    .sidebar-top { display: flex; flex-direction: column; }
-    .brand { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid #232428; margin-bottom: 16px; }
-    .brand-icon { width: 38px; height: 38px; background: #182033; border: 1px solid #23304d; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 18px; }
+    /* DASHBOARD IDÊNTICO À REFERÊNCIA MOBILE */
+    .app-container { display: flex; flex-direction: column; width: 100%; max-width: 480px; gap: 16px; margin: 0 auto; }
+    
+    /* TOPO COM LOGO E BOTÃO BLOQUEAR */
+    .mobile-header-card {
+      background: #141518;
+      border: 1px solid #232428;
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 38px; height: 38px; background: #182033; border: 1px solid #23304d; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 18px;
+    }
+
     .brand-info h2 { font-size: 14px; font-weight: 700; color: #fff; }
     .brand-info span { font-size: 11px; color: #10b981; display: flex; align-items: center; gap: 4px; }
 
-    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-    .nav-item { padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 500; color: #8e8f96; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
-    .nav-item:hover { color: #fff; background: #1a1b1f; }
-    .nav-item.active { background: #2563eb; color: #fff; font-weight: 600; }
-
-    /* BOTÃO BLOQUEAR COM DESTAQUE */
-    .nav-item.logout-btn {
+    /* BOTÃO BLOQUEAR DESTAQUE */
+    .btn-logout-top {
       background: rgba(239, 68, 68, 0.12);
       border: 1px solid rgba(239, 68, 68, 0.3);
       color: #ef4444;
-      margin-top: 12px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12px;
       font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: 0.2s;
     }
-    .nav-item.logout-btn:hover {
-      background: #ef4444;
-      color: #fff;
+    .btn-logout-top:hover { background: #ef4444; color: #fff; }
+
+    /* NAVEGAÇÃO HORIZONTAL (ABAS) */
+    .nav-horizontal {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
     }
 
-    .main-content { flex: 1; background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; min-width: 0; }
-    .header-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
-    .header-title h1 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .nav-tab {
+      background: #1a1b1f;
+      border: 1px solid #28292d;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #8e8f96;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: 0.2s;
+    }
+
+    .nav-tab:hover { color: #fff; background: #222328; }
+    .nav-tab.active { background: #2563eb; border-color: #2563eb; color: #fff; font-weight: 600; }
+
+    /* CONTEÚDO PRINCIPAL */
+    .main-content-card {
+      background: #141518;
+      border: 1px solid #232428;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-area {
+      margin-bottom: 16px;
+    }
+    .header-title h1 { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
     .header-title p { font-size: 12px; color: #71727a; }
 
-    .btn-add { padding: 10px 16px; background: #2563eb; border: none; border-radius: 10px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3); white-space: nowrap; }
+    .btn-add {
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+      margin-bottom: 16px;
+    }
 
     .search-box { position: relative; margin-bottom: 16px; }
     .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #52535a; font-size: 14px; }
     .search-input { width: 100%; padding: 12px 14px 12px 40px; background: #111214; border: 1px solid #232428; border-radius: 10px; color: #fff; font-size: 13px; outline: none; }
 
-    .cards-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 4px; }
-    .cred-card { background: #111214; border: 1px solid #232428; border-radius: 12px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .cred-info { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
-    .avatar-icon { width: 40px; height: 40px; background: #1a2030; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: 700; font-size: 16px; flex-shrink: 0; }
-    .cred-text { min-width: 0; flex: 1; }
-    .cred-text h3 { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .cred-text p { font-size: 12px; color: #71727a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cards-list { display: flex; flex-direction: column; gap: 12px; max-height: 420px; overflow-y: auto; padding-right: 2px; }
+    .cred-card { background: #111214; border: 1px solid #232428; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+    
+    .cred-top-info { display: flex; align-items: center; gap: 12px; }
+    .avatar-icon { width: 38px; height: 38px; background: #1a2030; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+    .cred-text h3 { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+    .cred-text p { font-size: 12px; color: #71727a; }
 
-    .cred-actions { display: flex; align-items: center; gap: 10px; }
-    .pwd-mask { background: #090a0b; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #8e8f96; letter-spacing: 2px; border: 1px solid #1c1d21; }
+    .cred-actions { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #1c1d21; padding-top: 10px; gap: 8px; }
+    .pwd-mask { background: #090a0b; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #8e8f96; letter-spacing: 2px; border: 1px solid #1c1d21; flex: 1; text-align: center; }
+    .action-icons-group { display: flex; gap: 12px; align-items: center; }
     .action-icon { color: #71727a; cursor: pointer; font-size: 14px; transition: color 0.2s; padding: 4px; }
     .action-icon:hover { color: #fff; }
-
-    /* RESPONSIVIDADE MOBILE OTIMIZADA */
-    @media (max-width: 768px) {
-      body { padding: 8px; align-items: flex-start; }
-      .app-container { flex-direction: column; gap: 10px; }
-      .sidebar { width: 100%; padding: 12px; flex-direction: column; }
-      .nav-list { flex-direction: row; overflow-x: auto; padding-bottom: 4px; gap: 4px; }
-      .nav-item { padding: 8px 10px; font-size: 12px; white-space: nowrap; }
-      .nav-item.logout-btn { margin-top: 0; margin-left: auto; }
-      .main-content { padding: 16px; }
-      .cred-card { flex-direction: column; align-items: stretch; gap: 10px; }
-      .cred-actions { justify-content: space-between; border-top: 1px solid #232428; padding-top: 8px; }
-      .pwd-mask { flex: 1; text-align: center; }
-    }
   </style>
 </head>
 <body>
@@ -160,45 +225,53 @@
     </div>
   </div>
 
-  <!-- DASHBOARD PRINCIPAL -->
+  <!-- DASHBOARD PRINCIPAL (ESTILO MOBILE DA REFERÊNCIA) -->
   <div id="dashboard-screen" class="view-screen hidden">
     <div class="app-container">
-      <!-- MENU LATERAL -->
-      <div class="sidebar">
-        <div class="sidebar-top">
-          <div class="brand">
+      
+      <!-- TOPO / CABEÇALHO MOBILE -->
+      <div class="mobile-header-card">
+        <div class="top-row">
+          <div class="brand-group">
             <div class="brand-icon">
               <i class="fa-solid fa-shield-halved"></i>
             </div>
             <div class="brand-info">
               <h2>Cofre Blindado</h2>
-              <span><i class="fa-solid fa-circle" style="font-size: 8px;"></i> AES-256 Protegido</span>
+              <span><i class="fa-solid fa-circle" style="font-size: 7px;"></i> AES-256 Protegido</span>
             </div>
           </div>
-
-          <ul class="nav-list">
-            <li class="nav-item active" onclick="switchTab('credenciais', this)"><i class="fa-solid fa-key"></i> Credenciais</li>
-            <li class="nav-item" onclick="switchTab('notas', this)"><i class="fa-solid fa-sticky-note"></i> Notas</li>
-            <li class="nav-item" onclick="switchTab('documentos', this)"><i class="fa-solid fa-folder"></i> Documentos</li>
-          </ul>
+          <button class="btn-logout-top" onclick="lockVault()">
+            <i class="fa-solid fa-right-from-bracket"></i> Bloquear Cofre
+          </button>
         </div>
 
-        <div>
-          <ul class="nav-list">
-            <li class="nav-item logout-btn" onclick="lockVault()"><i class="fa-solid fa-right-from-bracket"></i> Bloquear Cofre</li>
-          </ul>
+        <!-- ABAS DE NAVEGAÇÃO HORIZONTAL -->
+        <div class="nav-horizontal">
+          <div class="nav-tab active" onclick="switchTab('credenciais', this)">
+            <i class="fa-solid fa-key"></i> Credenciais
+          </div>
+          <div class="nav-tab" onclick="switchTab('notas', this)">
+            <i class="fa-solid fa-sticky-note"></i> Notas
+          </div>
+          <div class="nav-tab" onclick="switchTab('documentos', this)">
+            <i class="fa-solid fa-folder"></i> Documentos
+          </div>
         </div>
       </div>
 
       <!-- CONTEÚDO PRINCIPAL -->
-      <div class="main-content">
+      <div class="main-content-card">
         <div class="header-area">
           <div class="header-title">
             <h1 id="sec-title">Gestor de Credenciais</h1>
             <p id="sec-subtitle">Guarde e gira as suas senhas em segurança</p>
           </div>
-          <button class="btn-add" id="btn-add-item" onclick="addNewItem()"><i class="fa-solid fa-plus"></i> Nova Credencial</button>
         </div>
+
+        <button class="btn-add" id="btn-add-item" onclick="addNewItem()">
+          <i class="fa-solid fa-plus"></i> Nova Credencial
+        </button>
 
         <div class="search-box">
           <i class="fa-solid fa-magnifying-glass"></i>
@@ -206,13 +279,14 @@
         </div>
 
         <div class="cards-list" id="items-list">
-          <!-- Renderizado via JavaScript -->
+          <!-- Renderizado via JS -->
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- Input oculto para upload exclusivo de Imagens e PDFs -->
+  <!-- Input oculto para upload de imagens e PDFs -->
   <input type="file" id="file-selector" accept="image/*,application/pdf" style="display: none;" onchange="handleFileSelected(event)" />
 
   <script>
@@ -256,24 +330,17 @@
       }
     }
 
-    // Biometria real via WebAuthn com fallback simulado amigável
     async function tryBiometricLogin() {
       if (window.PublicKeyCredential && navigator.credentials) {
         try {
           const challenge = new Uint8Array(32);
           window.crypto.getRandomValues(challenge);
           const credential = await navigator.credentials.get({
-            publicKey: {
-              challenge: challenge,
-              timeout: 60000,
-              userVerification: "required"
-            }
+            publicKey: { challenge: challenge, timeout: 60000, userVerification: "required" }
           });
-          if (credential) {
-            grantAccess();
-          }
+          if (credential) grantAccess();
         } catch (err) {
-          if (confirm("Autenticação biométrica cancelada ou não configurada neste dispositivo. Deseja simular o acesso biométrico para testes?")) {
+          if (confirm("Autenticação biométrica cancelada ou não configurada. Deseja simular o acesso?")) {
             grantAccess();
           }
         }
@@ -298,9 +365,7 @@
 
     function switchTab(tabName, element) {
       activeTab = tabName;
-      document.querySelectorAll('.sidebar .nav-item').forEach(el => {
-        if(!el.classList.contains('logout-btn')) el.classList.remove('active');
-      });
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
       if(element) element.classList.add('active');
 
       const titleEl = document.getElementById('sec-title');
@@ -345,7 +410,7 @@
         if (activeTab === 'documentos') {
           container.insertAdjacentHTML('beforeend', `
             <div class="cred-card" id="card-${item.id}">
-              <div class="cred-info">
+              <div class="cred-top-info">
                 <div class="avatar-icon"><i class="fa-solid fa-file-arrow-down"></i></div>
                 <div class="cred-text">
                   <h3>${item.title}</h3>
@@ -353,16 +418,19 @@
                 </div>
               </div>
               <div class="cred-actions">
-                <i class="fa-regular fa-eye action-icon" onclick="openFile('${item.fileData}', '${item.title}')" title="Visualizar Ficheiro"></i>
-                <i class="fa-solid fa-download action-icon" onclick="downloadFile('${item.fileData}', '${item.title}')" title="Descarregar"></i>
-                <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem(${item.id})" title="Eliminar"></i>
+                <span style="font-size: 11px; color: #10b981;"><i class="fa-solid fa-shield"></i> Protegido</span>
+                <div class="action-icons-group">
+                  <i class="fa-regular fa-eye action-icon" onclick="openFile('${item.fileData}', '${item.title}')" title="Visualizar"></i>
+                  <i class="fa-solid fa-download action-icon" onclick="downloadFile('${item.fileData}', '${item.title}')" title="Descarregar"></i>
+                  <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem(${item.id})" title="Eliminar"></i>
+                </div>
               </div>
             </div>
           `);
         } else {
           container.insertAdjacentHTML('beforeend', `
             <div class="cred-card" id="card-${item.id}">
-              <div class="cred-info">
+              <div class="cred-top-info">
                 <div class="avatar-icon">${initial}</div>
                 <div class="cred-text">
                   <h3>${item.title}</h3>
@@ -371,9 +439,11 @@
               </div>
               <div class="cred-actions">
                 <span class="pwd-mask" id="mask-${item.id}">••••••••••••</span>
-                <i class="fa-regular fa-eye action-icon" onclick="toggleSecret(${item.id}, '${item.secret}')" title="Mostrar/Ocultar"></i>
-                <i class="fa-regular fa-copy action-icon" onclick="copySecret('${item.secret}')" title="Copiar"></i>
-                <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem(${item.id})" title="Eliminar"></i>
+                <div class="action-icons-group">
+                  <i class="fa-regular fa-eye action-icon" onclick="toggleSecret(${item.id}, '${item.secret}')" title="Mostrar/Ocultar"></i>
+                  <i class="fa-regular fa-copy action-icon" onclick="copySecret('${item.secret}')" title="Copiar"></i>
+                  <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem(${item.id})" title="Eliminar"></i>
+                </div>
               </div>
             </div>
           `);
@@ -452,7 +522,7 @@
 
     function openFile(base64Data, filename) {
       if (!base64Data) {
-        alert('Este documento de exemplo padrão não possui conteúdo físico guardado. Adicione um novo ficheiro PDF ou imagem para testar a visualização.');
+        alert('Este documento padrão não possui arquivo físico associado. Adicione um ficheiro novo para testar.');
         return;
       }
       const win = window.open();
@@ -461,7 +531,7 @@
 
     function downloadFile(base64Data, filename) {
       if (!base64Data) {
-        alert('Documento de exemplo sem arquivo físico associado.');
+        alert('Documento padrão sem arquivo físico associado.');
         return;
       }
       const a = document.createElement('a');
