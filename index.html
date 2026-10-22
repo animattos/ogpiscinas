@@ -14,7 +14,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
     body { background-color: #0d0d0e; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
 
-    /* TELAS */
     .screen { width: 100%; display: flex; justify-content: center; align-items: center; }
     .hidden { display: none !important; }
 
@@ -130,10 +129,10 @@
             <span style="font-size: 11px; color: #10b981;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Protegido</span>
           </div>
         </div>
-        <ul class="nav-list">
-          <li class="nav-item active"><i class="fa-solid fa-key"></i> Credenciais</li>
-          <li class="nav-item" onclick="alert('Secção de Notas Secretas')"><i class="fa-solid fa-sticky-note"></i> Notas Secretas</li>
-          <li class="nav-item" onclick="alert('Secção de Documentos')"><i class="fa-solid fa-folder"></i> Documentos</li>
+        <ul class="nav-list" id="sidebar-menu">
+          <li class="nav-item active" data-target="credenciais"><i class="fa-solid fa-key"></i> Credenciais</li>
+          <li class="nav-item" data-target="notas"><i class="fa-solid fa-sticky-note"></i> Notas Secretas</li>
+          <li class="nav-item" data-target="documentos"><i class="fa-solid fa-folder"></i> Documentos</li>
           <li class="nav-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Bloquear</li>
         </ul>
       </div>
@@ -141,39 +140,39 @@
       <div class="main-content">
         <div class="header-area">
           <div>
-            <h1 style="font-size:20px; color:#fff;">Gestor de Credenciais</h1>
-            <p style="font-size:12px; color:#71727a;">Guarde e gira as suas senhas em segurança</p>
+            <h1 id="section-title" style="font-size:20px; color:#fff;">Gestor de Credenciais</h1>
+            <p id="section-subtitle" style="font-size:12px; color:#71727a;">Guarde e gira as suas senhas em segurança</p>
           </div>
-          <button class="btn-add" onclick="addCred()"><i class="fa-solid fa-plus"></i> Nova Credencial</button>
+          <button id="btn-action-main" class="btn-add" onclick="primaryAction()"><i class="fa-solid fa-plus"></i> Nova Credencial</button>
         </div>
 
-        <div class="search-box">
+        <div class="search-box" id="search-box-container">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" class="search-input" placeholder="Pesquisar por serviço..." />
+          <input type="text" class="search-input" placeholder="Pesquisar..." />
         </div>
 
-        <div class="cards-list" id="list">
-          <div class="cred-card">
-            <div class="cred-info">
-              <div class="avatar-icon">C</div>
-              <div>
-                <h3 style="font-size:14px; color:#fff;">Conta Bancária</h3>
-                <p style="font-size:12px; color:#71727a;">usuario.silva</p>
-              </div>
-            </div>
-            <div class="cred-actions">
-              <span class="pwd-mask">••••••••••••</span>
-              <i class="fa-regular fa-eye action-icon" onclick="alert('Senha: 123456')"></i>
-              <i class="fa-regular fa-copy action-icon" onclick="alert('Copiado!')"></i>
-              <i class="fa-regular fa-trash-can action-icon" onclick="this.closest('.cred-card').remove()"></i>
-            </div>
-          </div>
+        <div class="cards-list" id="content-list">
+          <!-- Conteúdo dinâmico preenchido via JS -->
         </div>
       </div>
     </div>
   </div>
 
   <script>
+    let currentTab = 'credenciais';
+    let database = {
+      credenciais: [
+        { name: 'Conta Bancária', user: 'usuario.silva', secret: '123456' },
+        { name: 'E-mail Principal', user: 'contato@cofre.com', secret: 'minhasenha' }
+      ],
+      notas: [
+        { name: 'Ideias de Projetos', user: 'Nota Pessoal', secret: 'Lançar o aplicativo na Google Play Store este mês.' }
+      ],
+      documentos: [
+        { name: 'Passaporte', user: 'Documento Oficial', secret: 'BR-987654321' }
+      ]
+    };
+
     function togglePwd() {
       const f = document.getElementById('master-pwd');
       const i = document.getElementById('pwd-toggle');
@@ -189,6 +188,7 @@
     function handleLogin() {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('dashboard-screen').classList.remove('hidden');
+      renderSection('credenciais');
     }
 
     function logout() {
@@ -196,30 +196,74 @@
       document.getElementById('login-screen').classList.remove('hidden');
     }
 
-    function addCred() {
-      const name = prompt('Nome do Serviço:');
-      const user = prompt('Utilizador / E-mail:');
-      if (name && user) {
-        const list = document.getElementById('list');
-        const initial = name.charAt(0).toUpperCase();
-        const html = `
+    // Configurar cliques do menu lateral
+    document.querySelectorAll('.nav-item[data-target]').forEach(item => {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        this.classList.add('active');
+        renderSection(this.getAttribute('data-target'));
+      });
+    });
+
+    function renderSection(tab) {
+      currentTab = tab;
+      const title = document.getElementById('section-title');
+      const subtitle = document.getElementById('section-subtitle');
+      const btn = document.getElementById('btn-action-main');
+      const list = document.getElementById('content-list');
+
+      list.innerHTML = '';
+
+      if (tab === 'credenciais') {
+        title.innerText = 'Gestor de Credenciais';
+        subtitle.innerText = 'Guarde e gira as suas senhas em segurança';
+        btn.innerHTML = '<i class="fa-solid fa-plus"></i> Nova Credencial';
+      } else if (tab === 'notas') {
+        title.innerText = 'Notas Secretas';
+        subtitle.innerText = 'Informações confidenciais e blocos de texto';
+        btn.innerHTML = '<i class="fa-solid fa-plus"></i> Nova Nota';
+      } else if (tab === 'documentos') {
+        title.innerText = 'Documentos';
+        subtitle.innerText = 'Ficheiros e registos importantes guardados';
+        btn.innerHTML = '<i class="fa-solid fa-plus"></i> Novo Documento';
+      }
+
+      database[tab].forEach((item, index) => {
+        const initial = item.name.charAt(0).toUpperCase();
+        list.innerHTML += `
           <div class="cred-card">
             <div class="cred-info">
               <div class="avatar-icon">${initial}</div>
               <div>
-                <h3 style="font-size:14px; color:#fff;">${name}</h3>
-                <p style="font-size:12px; color:#71727a;">${user}</p>
+                <h3 style="font-size:14px; color:#fff;">${item.name}</h3>
+                <p style="font-size:12px; color:#71727a;">${item.user}</p>
               </div>
             </div>
             <div class="cred-actions">
               <span class="pwd-mask">••••••••••••</span>
-              <i class="fa-regular fa-eye action-icon" onclick="alert('Senha guardada')"></i>
-              <i class="fa-regular fa-copy action-icon" onclick="alert('Copiado!')"></i>
-              <i class="fa-regular fa-trash-can action-icon" onclick="this.closest('.cred-card').remove()"></i>
+              <i class="fa-regular fa-eye action-icon" onclick="alert('Conteúdo: ${item.secret}')" title="Ver segredo"></i>
+              <i class="fa-regular fa-copy action-icon" onclick="alert('Copiado para a área de transferência!')" title="Copiar"></i>
+              <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem('${tab}', ${index})" title="Eliminar"></i>
             </div>
           </div>
         `;
-        list.insertAdjacentHTML('beforeend', html);
+      });
+    }
+
+    function primaryAction() {
+      const name = prompt('Nome / Título:');
+      const user = prompt('Subtítulo / Utilizador:');
+      const secret = prompt('Segredo / Senha / Nota:');
+      if (name && secret) {
+        database[currentTab].push({ name, user: user || '', secret });
+        renderSection(currentTab);
+      }
+    }
+
+    function deleteItem(tab, index) {
+      if (confirm('Tem certeza que deseja eliminar este item?')) {
+        database[tab].splice(index, 1);
+        renderSection(tab);
       }
     }
   </script>
