@@ -7,7 +7,6 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0d0d0e" />
   
-  <!-- FontAwesome & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
 
@@ -15,7 +14,11 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
     body { background-color: #0d0d0e; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
 
-    /* TELA DE LOGIN */
+    /* TELAS */
+    .screen { width: 100%; display: flex; justify-content: center; align-items: center; }
+    .hidden { display: none !important; }
+
+    /* LOGIN */
     .login-container {
       background: linear-gradient(145deg, #18191c, #121315);
       border: 1px solid #28292d;
@@ -26,175 +29,144 @@
       box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
       text-align: center;
     }
-
     .shield-badge {
       width: 68px; height: 68px; background: #141824; border: 1px solid #1f283e; border-radius: 18px;
       display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: #2563eb; font-size: 30px;
-      box-shadow: 0 0 20px rgba(37, 99, 235, 0.15);
     }
-
     .login-title { font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 6px; }
     .login-subtitle { font-size: 13px; color: #8e8f96; margin-bottom: 24px; }
     .input-label { display: block; text-align: left; font-size: 11px; font-weight: 700; color: #71727a; letter-spacing: 0.8px; margin-bottom: 8px; }
     .input-wrapper { position: relative; margin-bottom: 20px; }
-
     .input-field {
       width: 100%; padding: 14px 44px 14px 16px; background-color: #131417; border: 1px solid #28292d;
-      border-radius: 10px; color: #fff; font-size: 15px; outline: none; transition: border-color 0.2s;
+      border-radius: 10px; color: #fff; font-size: 15px; outline: none;
     }
-    .input-field:focus { border-color: #2563eb; }
-
-    .toggle-pwd { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #71727a; cursor: pointer; font-size: 15px; }
-
+    .toggle-pwd { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #71727a; cursor: pointer; }
     .btn-primary {
       width: 100%; padding: 14px; background-color: #2563eb; border: none; border-radius: 10px;
       color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35); transition: background-color 0.2s;
     }
-    .btn-primary:hover { background-color: #1d4ed8; }
-
-    .divider { display: flex; align-items: center; margin: 22px 0; color: #52535a; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+    .divider { display: flex; align-items: center; margin: 22px 0; color: #52535a; font-size: 11px; font-weight: 600; }
     .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #232428; }
     .divider span { padding: 0 10px; }
-
     .btn-biometric {
       width: 100%; padding: 14px; background-color: #181c26; border: 1px solid #232a3b; border-radius: 10px;
       color: #fff; font-size: 15px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
-      transition: background-color 0.2s;
     }
-    .btn-biometric:hover { background-color: #1f2535; }
 
-    .demo-hint { margin-top: 24px; font-size: 12px; color: #63646c; }
-    .demo-hint strong { color: #a1a2a9; }
-
-    /* DASHBOARD RESPONSIVO */
+    /* DASHBOARD */
     .app-container { display: flex; width: 100%; max-width: 960px; gap: 16px; }
-    .sidebar { width: 240px; background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 20px 14px; display: flex; flex-direction: column; flex-shrink: 0; }
-    
+    .sidebar { width: 240px; background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 20px 14px; flex-shrink: 0; display: flex; flex-direction: column; }
     .brand { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid #232428; margin-bottom: 16px; }
-    .brand-icon { width: 38px; height: 38px; background: #182033; border: 1px solid #23304d; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 18px; }
-    .brand-info h2 { font-size: 14px; font-weight: 700; color: #fff; }
-    .brand-info span { font-size: 11px; color: #10b981; display: flex; align-items: center; gap: 4px; }
-
+    .brand-icon { width: 38px; height: 38px; background: #182033; border: 1px solid #23304d; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; }
     .nav-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-    .nav-item { padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 500; color: #8e8f96; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
-    .nav-item:hover { color: #fff; background: #1a1b1f; }
-    .nav-item.active { background: #2563eb; color: #fff; font-weight: 600; }
+    .nav-item { padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #8e8f96; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+    .nav-item:hover, .nav-item.active { background: #2563eb; color: #fff; font-weight: 600; }
 
-    .main-content { flex: 1; background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; min-width: 0; }
+    .main-content { flex: 1; background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 24px; min-width: 0; }
     .header-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
-    .header-title h1 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-    .header-title p { font-size: 12px; color: #71727a; }
-
-    .btn-add { padding: 10px 16px; background: #2563eb; border: none; border-radius: 10px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3); }
+    .btn-add { padding: 10px 16px; background: #2563eb; border: none; border-radius: 10px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
 
     .search-box { position: relative; margin-bottom: 16px; }
-    .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #52535a; font-size: 14px; }
-    .search-input { width: 100%; padding: 12px 14px 12px 40px; background: #111214; border: 1px solid #232428; border-radius: 10px; color: #fff; font-size: 13px; outline: none; }
+    .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #52535a; }
+    .search-input { width: 100%; padding: 12px 14px 12px 40px; background: #111214; border: 1px solid #232428; border-radius: 10px; color: #fff; outline: none; }
 
     .cards-list { display: flex; flex-direction: column; gap: 12px; }
     .cred-card { background: #111214; border: 1px solid #232428; border-radius: 12px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .cred-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .avatar-icon { width: 40px; height: 40px; background: #1a2030; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: 700; font-size: 16px; flex-shrink: 0; }
-    .cred-text h3 { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 2px; }
-    .cred-text p { font-size: 12px; color: #71727a; }
-
+    .cred-info { display: flex; align-items: center; gap: 12px; }
+    .avatar-icon { width: 40px; height: 40px; background: #1a2030; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: 700; }
     .cred-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-    .pwd-mask { background: #090a0b; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #8e8f96; letter-spacing: 2px; border: 1px solid #1c1d21; }
-    .action-icon { color: #71727a; cursor: pointer; font-size: 14px; transition: color 0.2s; }
+    .pwd-mask { background: #090a0b; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #8e8f96; border: 1px solid #1c1d21; }
+    .action-icon { color: #71727a; cursor: pointer; font-size: 14px; }
     .action-icon:hover { color: #fff; }
-
-    .hidden { display: none !important; }
 
     @media (max-width: 768px) {
       body { padding: 10px; align-items: flex-start; }
-      .app-container { flex-direction: column; gap: 12px; }
-      .sidebar { width: 100%; padding: 12px 16px; }
-      .nav-list { flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+      .app-container { flex-direction: column; }
+      .sidebar { width: 100%; }
+      .nav-list { flex-direction: row; overflow-x: auto; }
+      .cred-card { align-items: flex-start; }
       .cred-actions { width: 100%; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid #1c1d21; }
     }
   </style>
 </head>
 <body>
 
-  <!-- TELA DE LOGIN (Exatamente igual à imagem) -->
-  <div id="login-screen" class="login-container">
-    <div class="shield-badge">
-      <i class="fa-solid fa-shield-halved"></i>
-    </div>
-    <h1 class="login-title">Cofre Blindado</h1>
-    <p class="login-subtitle">Insira a sua chave mestra ou biometria para desbloquear</p>
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen" class="screen">
+    <div class="login-container">
+      <div class="shield-badge"><i class="fa-solid fa-shield-halved"></i></div>
+      <h1 class="login-title">Cofre Blindado</h1>
+      <p class="login-subtitle">Insira a sua chave mestra ou biometria para desbloquear</p>
 
-    <form id="login-form">
-      <label class="input-label">CHAVE MESTRA</label>
       <div class="input-wrapper">
-        <input type="password" id="master-pwd" class="input-field" value="admin123" required />
-        <i class="fa-regular fa-eye-slash toggle-pwd" id="pwd-toggle" onclick="togglePassword()"></i>
+        <label class="input-label">CHAVE MESTRA</label>
+        <input type="password" id="master-pwd" class="input-field" value="admin123" />
+        <i class="fa-regular fa-eye-slash toggle-pwd" id="pwd-toggle" onclick="togglePwd()"></i>
       </div>
 
-      <button type="submit" class="btn-primary">
+      <button type="button" class="btn-primary" onclick="handleLogin()">
         <i class="fa-solid fa-lock-open"></i> Desbloquear Cofre
       </button>
-    </form>
 
-    <div class="divider">
-      <span>OU ACESSE COM</span>
+      <div class="divider"><span>OU ACESSE COM</span></div>
+
+      <button type="button" class="btn-biometric" onclick="handleLogin()">
+        <i class="fa-solid fa-fingerprint" style="color: #2563eb; font-size: 18px;"></i> Biometria / FaceID
+      </button>
+
+      <p style="margin-top: 24px; font-size: 12px; color: #63646c;">Senha padrão: <strong style="color:#fff">admin123</strong></p>
     </div>
-
-    <button type="button" class="btn-biometric" onclick="unlockApp()">
-      <i class="fa-solid fa-fingerprint" style="color: #2563eb; font-size: 18px;"></i> Biometria / FaceID
-    </button>
-
-    <p class="demo-hint">Senha padrão para demonstração: <strong>admin123</strong></p>
   </div>
 
-  <!-- DASHBOARD PRINCIPAL -->
-  <div id="dashboard-screen" class="app-container hidden">
-    <div class="sidebar">
-      <div class="brand">
-        <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <div class="brand-info">
-          <h2>Cofre Blindado</h2>
-          <span><i class="fa-solid fa-circle" style="font-size: 8px;"></i> AES-256 Protegido</span>
-        </div>
-      </div>
-
-      <ul class="nav-list">
-        <li class="nav-item active"><i class="fa-solid fa-key"></i> Credenciais</li>
-        <li class="nav-item"><i class="fa-solid fa-sticky-note"></i> Notas Secretas</li>
-        <li class="nav-item"><i class="fa-solid fa-folder"></i> Documentos</li>
-        <li class="nav-item" onclick="lockVault()"><i class="fa-solid fa-right-from-bracket"></i> Bloquear</li>
-      </ul>
-    </div>
-
-    <div class="main-content">
-      <div class="header-area">
-        <div class="header-title">
-          <h1>Gestor de Credenciais</h1>
-          <p>Guarde e gira as suas senhas em segurança</p>
-        </div>
-        <button class="btn-add" onclick="addNewCredential()"><i class="fa-solid fa-plus"></i> Nova Credencial</button>
-      </div>
-
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" class="search-input" placeholder="Pesquisar por serviço ou utilizador..." />
-      </div>
-
-      <div class="cards-list" id="credentials-list">
-        <div class="cred-card">
-          <div class="cred-info">
-            <div class="avatar-icon">C</div>
-            <div class="cred-text">
-              <h3>Conta Bancária</h3>
-              <p>usuario.silva</p>
-            </div>
+  <!-- DASHBOARD -->
+  <div id="dashboard-screen" class="screen hidden">
+    <div class="app-container">
+      <div class="sidebar">
+        <div class="brand">
+          <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <div>
+            <h2 style="font-size: 14px; color: #fff;">Cofre Blindado</h2>
+            <span style="font-size: 11px; color: #10b981;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Protegido</span>
           </div>
-          <div class="cred-actions">
-            <span class="pwd-mask">••••••••••••</span>
-            <i class="fa-regular fa-eye action-icon" onclick="alert('Senha: ••••••')"></i>
-            <i class="fa-regular fa-copy action-icon" onclick="alert('Copiado para a área de transferência!')"></i>
-            <i class="fa-regular fa-trash-can action-icon" onclick="this.closest('.cred-card').remove()"></i>
+        </div>
+        <ul class="nav-list">
+          <li class="nav-item active"><i class="fa-solid fa-key"></i> Credenciais</li>
+          <li class="nav-item" onclick="alert('Secção de Notas Secretas')"><i class="fa-solid fa-sticky-note"></i> Notas Secretas</li>
+          <li class="nav-item" onclick="alert('Secção de Documentos')"><i class="fa-solid fa-folder"></i> Documentos</li>
+          <li class="nav-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Bloquear</li>
+        </ul>
+      </div>
+
+      <div class="main-content">
+        <div class="header-area">
+          <div>
+            <h1 style="font-size:20px; color:#fff;">Gestor de Credenciais</h1>
+            <p style="font-size:12px; color:#71727a;">Guarde e gira as suas senhas em segurança</p>
+          </div>
+          <button class="btn-add" onclick="addCred()"><i class="fa-solid fa-plus"></i> Nova Credencial</button>
+        </div>
+
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" class="search-input" placeholder="Pesquisar por serviço..." />
+        </div>
+
+        <div class="cards-list" id="list">
+          <div class="cred-card">
+            <div class="cred-info">
+              <div class="avatar-icon">C</div>
+              <div>
+                <h3 style="font-size:14px; color:#fff;">Conta Bancária</h3>
+                <p style="font-size:12px; color:#71727a;">usuario.silva</p>
+              </div>
+            </div>
+            <div class="cred-actions">
+              <span class="pwd-mask">••••••••••••</span>
+              <i class="fa-regular fa-eye action-icon" onclick="alert('Senha: 123456')"></i>
+              <i class="fa-regular fa-copy action-icon" onclick="alert('Copiado!')"></i>
+              <i class="fa-regular fa-trash-can action-icon" onclick="this.closest('.cred-card').remove()"></i>
+            </div>
           </div>
         </div>
       </div>
@@ -202,64 +174,47 @@
   </div>
 
   <script>
-    // Mostrar/Ocultar Palavra-passe
-    function togglePassword() {
-      const field = document.getElementById('master-pwd');
-      const icon = document.getElementById('pwd-toggle');
-      if (field.type === 'password') {
-        field.type = 'text';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+    function togglePwd() {
+      const f = document.getElementById('master-pwd');
+      const i = document.getElementById('pwd-toggle');
+      if (f.type === 'password') {
+        f.type = 'text';
+        i.className = 'fa-regular fa-eye toggle-pwd';
       } else {
-        field.type = 'password';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
+        f.type = 'password';
+        i.className = 'fa-regular fa-eye-slash toggle-pwd';
       }
     }
 
-    // Ação do formulário de login por Chave Mestra
-    document.getElementById('login-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const pwd = document.getElementById('master-pwd').value;
-      if (pwd === 'admin123') {
-        unlockApp();
-      } else {
-        alert('Chave mestra incorreta! Utilize: admin123');
-      }
-    });
-
-    // Função universal para abrir o cofre (seja por senha ou biometria)
-    function unlockApp() {
+    function handleLogin() {
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('dashboard-screen').classList.remove('hidden');
     }
 
-    // Bloquear e voltar à tela inicial
-    function lockVault() {
+    function logout() {
       document.getElementById('dashboard-screen').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
     }
 
-    // Adicionar nova credencial funcional
-    function addNewCredential() {
-      const name = prompt('Nome do Serviço (ex: Netflix, Google):');
-      const user = prompt('Usuário / E-mail:');
+    function addCred() {
+      const name = prompt('Nome do Serviço:');
+      const user = prompt('Utilizador / E-mail:');
       if (name && user) {
-        const list = document.getElementById('credentials-list');
+        const list = document.getElementById('list');
         const initial = name.charAt(0).toUpperCase();
         const html = `
           <div class="cred-card">
             <div class="cred-info">
               <div class="avatar-icon">${initial}</div>
-              <div class="cred-text">
-                <h3>${name}</h3>
-                <p>${user}</p>
+              <div>
+                <h3 style="font-size:14px; color:#fff;">${name}</h3>
+                <p style="font-size:12px; color:#71727a;">${user}</p>
               </div>
             </div>
             <div class="cred-actions">
               <span class="pwd-mask">••••••••••••</span>
-              <i class="fa-regular fa-eye action-icon" onclick="alert('Senha: ••••••')"></i>
-              <i class="fa-regular fa-copy action-icon" onclick="alert('Copiado para a área de transferência!')"></i>
+              <i class="fa-regular fa-eye action-icon" onclick="alert('Senha guardada')"></i>
+              <i class="fa-regular fa-copy action-icon" onclick="alert('Copiado!')"></i>
               <i class="fa-regular fa-trash-can action-icon" onclick="this.closest('.cred-card').remove()"></i>
             </div>
           </div>
