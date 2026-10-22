@@ -184,10 +184,12 @@
     </div>
   </div>
 
+  <!-- Input oculto estritamente para upload de imagens e PDFs -->
+  <input type="file" id="file-selector" accept="image/*,application/pdf" style="display: none;" onchange="handleFileSelected(event)" />
+
   <script>
     let activeTab = 'credenciais';
     
-    // Dados iniciais armazenados localmente
     let vaultData = JSON.parse(localStorage.getItem('my_vault_data')) || {
       credenciais: [
         { id: 1, title: 'Conta Bancária', sub: 'usuario.silva', secret: 'Senha123!' },
@@ -197,7 +199,7 @@
         { id: 3, title: 'Ideias do App', sub: 'Nota Pessoal', secret: 'Lançar versão final esta semana.' }
       ],
       documentos: [
-        { id: 4, title: 'Passaporte', sub: 'Documento ID', secret: 'AB-12345678' }
+        { id: 4, title: 'Passaporte.pdf', sub: 'Documento PDF', fileData: '', isFile: true }
       ]
     };
 
@@ -253,8 +255,8 @@
         btnEl.innerHTML = '<i class="fa-solid fa-plus"></i> Nova Nota';
       } else if (tabName === 'documentos') {
         titleEl.innerText = 'Documentos';
-        subEl.innerText = 'Códigos e registos de documentos importantes';
-        btnEl.innerHTML = '<i class="fa-solid fa-plus"></i> Novo Documento';
+        subEl.innerText = 'Guarde arquivos de imagens e PDFs com segurança';
+        btnEl.innerHTML = '<i class="fa-solid fa-plus"></i> Novo Documento (PDF/Img)';
       }
 
       document.getElementById('search-input').value = '';
@@ -277,24 +279,45 @@
 
       items.forEach((item) => {
         const initial = item.title.charAt(0).toUpperCase();
-        const html = `
-          <div class="cred-card" id="card-${item.id}">
-            <div class="cred-info">
-              <div class="avatar-icon">${initial}</div>
-              <div class="cred-text">
-                <h3>${item.title}</h3>
-                <p>${item.sub}</p>
+        
+        if (activeTab === 'documentos') {
+          // Renderização específica para documentos (Imagens e PDFs)
+          container.insertAdjacentHTML('beforeend', `
+            <div class="cred-card" id="card-${item.id}">
+              <div class="cred-info">
+                <div class="avatar-icon"><i class="fa-solid fa-file-arrow-down"></i></div>
+                <div class="cred-text">
+                  <h3>${item.title}</h3>
+                  <p>${item.sub}</p>
+                </div>
+              </div>
+              <div class="cred-actions">
+                <i class="fa-regular fa-eye action-icon" onclick="openFile('${item.fileData}', '${item.title}')" title="Visualizar Ficheiro"></i>
+                <i class="fa-solid fa-download action-icon" onclick="downloadFile('${item.fileData}', '${item.title}')" title="Descarregar"></i>
+                <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem(${item.id})" title="Eliminar"></i>
               </div>
             </div>
-            <div class="cred-actions">
-              <span class="pwd-mask" id="mask-${item.id}">••••••••••••</span>
-              <i class="fa-regular fa-eye action-icon" onclick="toggleSecret(${item.id}, '${item.secret}')" title="Mostrar/Ocultar"></i>
-              <i class="fa-regular fa-copy action-icon" onclick="copySecret('${item.secret}')" title="Copiar"></i>
-              <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem(${item.id})" title="Eliminar"></i>
+          `);
+        } else {
+          // Renderização padrão para Credenciais e Notas
+          container.insertAdjacentHTML('beforeend', `
+            <div class="cred-card" id="card-${item.id}">
+              <div class="cred-info">
+                <div class="avatar-icon">${initial}</div>
+                <div class="cred-text">
+                  <h3>${item.title}</h3>
+                  <p>${item.sub}</p>
+                </div>
+              </div>
+              <div class="cred-actions">
+                <span class="pwd-mask" id="mask-${item.id}">••••••••••••</span>
+                <i class="fa-regular fa-eye action-icon" onclick="toggleSecret(${item.id}, '${item.secret}')" title="Mostrar/Ocultar"></i>
+                <i class="fa-regular fa-copy action-icon" onclick="copySecret('${item.secret}')" title="Copiar"></i>
+                <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem(${item.id})" title="Eliminar"></i>
+              </div>
             </div>
-          </div>
-        `;
-        container.insertAdjacentHTML('beforeend', html);
+          `);
+        }
       });
     }
 
@@ -325,21 +348,70 @@
     }
 
     function addNewItem() {
-      const title = prompt('Título (ex: Banco, Netflix, Notas):');
-      const sub = prompt('Subtítulo / Utilizador / E-mail:');
-      const secret = prompt('Segredo / Senha / Conteúdo:');
+      if (activeTab === 'documentos') {
+        // Dispara o seletor nativo de ficheiros restrito a PDF e imagens
+        document.getElementById('file-selector').click();
+      } else {
+        const title = prompt('Título:');
+        const sub = prompt('Subtítulo / Utilizador:');
+        const secret = prompt('Segredo / Senha / Conteúdo:');
 
-      if (title && secret) {
+        if (title && secret) {
+          const newItem = {
+            id: Date.now(),
+            title: title,
+            sub: sub || 'Pessoal',
+            secret: secret
+          };
+          vaultData[activeTab].push(newItem);
+          saveData();
+          renderList();
+        }
+      }
+    }
+
+    // Processa o arquivo selecionado (Imagem ou PDF)
+    function handleFileSelected(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
         const newItem = {
           id: Date.now(),
-          title: title,
-          sub: sub || 'Pessoal',
-          secret: secret
+          title: file.name,
+          sub: `${(file.size / 1024).toFixed(1)} KB • ${file.type.includes('pdf') ? 'PDF' : 'Imagem'}`,
+          fileData: e.target.result,
+          isFile: true
         };
-        vaultData[activeTab].push(newItem);
+        vaultData.documentos.push(newItem);
         saveData();
         renderList();
+        event.target.value = ''; // Limpa o input
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function openFile(base64Data, filename) {
+      if (!base64Data) {
+        alert('Este documento de exemplo padrão não possui conteúdo físico guardado. Adicione um novo ficheiro PDF ou imagem para testar a visualização.');
+        return;
       }
+      const win = window.open();
+      win.document.write(`<iframe src="${base64Data}" frameborder="0" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%;" allowfullscreen></iframe>`);
+    }
+
+    function downloadFile(base64Data, filename) {
+      if (!base64Data) {
+        alert('Documento de exemplo sem arquivo físico associado.');
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = base64Data;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     function deleteItem(id) {
