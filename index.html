@@ -14,10 +14,10 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
     body { background-color: #0d0d0e; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
 
-    .screen { width: 100%; display: flex; justify-content: center; align-items: center; }
+    .view-screen { width: 100%; display: flex; justify-content: center; align-items: center; }
     .hidden { display: none !important; }
 
-    /* LOGIN */
+    /* TELA DE LOGIN */
     .login-container {
       background: linear-gradient(145deg, #18191c, #121315);
       border: 1px solid #28292d;
@@ -31,6 +31,7 @@
     .shield-badge {
       width: 68px; height: 68px; background: #141824; border: 1px solid #1f283e; border-radius: 18px;
       display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: #2563eb; font-size: 30px;
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.15);
     }
     .login-title { font-size: 24px; font-weight: 700; color: #ffffff; margin-bottom: 6px; }
     .login-subtitle { font-size: 13px; color: #8e8f96; margin-bottom: 24px; }
@@ -38,53 +39,69 @@
     .input-wrapper { position: relative; margin-bottom: 20px; }
     .input-field {
       width: 100%; padding: 14px 44px 14px 16px; background-color: #131417; border: 1px solid #28292d;
-      border-radius: 10px; color: #fff; font-size: 15px; outline: none;
+      border-radius: 10px; color: #fff; font-size: 15px; outline: none; transition: border-color 0.2s;
     }
-    .toggle-pwd { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #71727a; cursor: pointer; }
+    .input-field:focus { border-color: #2563eb; }
+    .toggle-pwd { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #71727a; cursor: pointer; font-size: 15px; }
     .btn-primary {
       width: 100%; padding: 14px; background-color: #2563eb; border: none; border-radius: 10px;
       color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.35); transition: background-color 0.2s;
     }
-    .divider { display: flex; align-items: center; margin: 22px 0; color: #52535a; font-size: 11px; font-weight: 600; }
+    .btn-primary:hover { background-color: #1d4ed8; }
+    .divider { display: flex; align-items: center; margin: 22px 0; color: #52535a; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
     .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #232428; }
     .divider span { padding: 0 10px; }
     .btn-biometric {
       width: 100%; padding: 14px; background-color: #181c26; border: 1px solid #232a3b; border-radius: 10px;
       color: #fff; font-size: 15px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: background-color 0.2s;
     }
+    .btn-biometric:hover { background-color: #1f2535; }
+    .demo-hint { margin-top: 24px; font-size: 12px; color: #63646c; }
+    .demo-hint strong { color: #a1a2a9; }
 
-    /* DASHBOARD */
+    /* DASHBOARD PRINCIPAL */
     .app-container { display: flex; width: 100%; max-width: 960px; gap: 16px; }
-    .sidebar { width: 240px; background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 20px 14px; flex-shrink: 0; display: flex; flex-direction: column; }
+    .sidebar { width: 240px; background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 20px 14px; display: flex; flex-direction: column; flex-shrink: 0; }
     .brand { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid #232428; margin-bottom: 16px; }
-    .brand-icon { width: 38px; height: 38px; background: #182033; border: 1px solid #23304d; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; }
-    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-    .nav-item { padding: 12px 14px; border-radius: 10px; font-size: 13px; color: #8e8f96; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
-    .nav-item:hover, .nav-item.active { background: #2563eb; color: #fff; font-weight: 600; }
+    .brand-icon { width: 38px; height: 38px; background: #182033; border: 1px solid #23304d; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 18px; }
+    .brand-info h2 { font-size: 14px; font-weight: 700; color: #fff; }
+    .brand-info span { font-size: 11px; color: #10b981; display: flex; align-items: center; gap: 4px; }
 
-    .main-content { flex: 1; background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 24px; min-width: 0; }
+    .nav-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .nav-item { padding: 12px 14px; border-radius: 10px; font-size: 13px; font-weight: 500; color: #8e8f96; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s; }
+    .nav-item:hover { color: #fff; background: #1a1b1f; }
+    .nav-item.active { background: #2563eb; color: #fff; font-weight: 600; }
+
+    .main-content { flex: 1; background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; min-width: 0; }
     .header-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
-    .btn-add { padding: 10px 16px; background: #2563eb; border: none; border-radius: 10px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .header-title h1 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .header-title p { font-size: 12px; color: #71727a; }
+
+    .btn-add { padding: 10px 16px; background: #2563eb; border: none; border-radius: 10px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3); }
 
     .search-box { position: relative; margin-bottom: 16px; }
-    .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #52535a; }
-    .search-input { width: 100%; padding: 12px 14px 12px 40px; background: #111214; border: 1px solid #232428; border-radius: 10px; color: #fff; outline: none; }
+    .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #52535a; font-size: 14px; }
+    .search-input { width: 100%; padding: 12px 14px 12px 40px; background: #111214; border: 1px solid #232428; border-radius: 10px; color: #fff; font-size: 13px; outline: none; }
 
     .cards-list { display: flex; flex-direction: column; gap: 12px; }
     .cred-card { background: #111214; border: 1px solid #232428; border-radius: 12px; padding: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .cred-info { display: flex; align-items: center; gap: 12px; }
-    .avatar-icon { width: 40px; height: 40px; background: #1a2030; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: 700; }
+    .cred-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .avatar-icon { width: 40px; height: 40px; background: #1a2030; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+    .cred-text h3 { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+    .cred-text p { font-size: 12px; color: #71727a; }
+
     .cred-actions { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-    .pwd-mask { background: #090a0b; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #8e8f96; border: 1px solid #1c1d21; }
-    .action-icon { color: #71727a; cursor: pointer; font-size: 14px; }
+    .pwd-mask { background: #090a0b; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: #8e8f96; letter-spacing: 2px; border: 1px solid #1c1d21; }
+    .action-icon { color: #71727a; cursor: pointer; font-size: 14px; transition: color 0.2s; }
     .action-icon:hover { color: #fff; }
 
     @media (max-width: 768px) {
       body { padding: 10px; align-items: flex-start; }
-      .app-container { flex-direction: column; }
-      .sidebar { width: 100%; }
-      .nav-list { flex-direction: row; overflow-x: auto; }
-      .cred-card { align-items: flex-start; }
+      .app-container { flex-direction: column; gap: 12px; }
+      .sidebar { width: 100%; padding: 12px 16px; }
+      .nav-list { flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
       .cred-actions { width: 100%; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid #1c1d21; }
     }
   </style>
@@ -92,178 +109,244 @@
 <body>
 
   <!-- TELA DE LOGIN -->
-  <div id="login-screen" class="screen">
+  <div id="login-screen" class="view-screen">
     <div class="login-container">
-      <div class="shield-badge"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="shield-badge">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
       <h1 class="login-title">Cofre Blindado</h1>
       <p class="login-subtitle">Insira a sua chave mestra ou biometria para desbloquear</p>
 
       <div class="input-wrapper">
         <label class="input-label">CHAVE MESTRA</label>
         <input type="password" id="master-pwd" class="input-field" value="admin123" />
-        <i class="fa-regular fa-eye-slash toggle-pwd" id="pwd-toggle" onclick="togglePwd()"></i>
+        <i class="fa-regular fa-eye-slash toggle-pwd" id="pwd-toggle" onclick="togglePasswordLogin()"></i>
       </div>
 
-      <button type="button" class="btn-primary" onclick="handleLogin()">
+      <button type="button" class="btn-primary" onclick="tryLogin()">
         <i class="fa-solid fa-lock-open"></i> Desbloquear Cofre
       </button>
 
-      <div class="divider"><span>OU ACESSE COM</span></div>
+      <div class="divider">
+        <span>OU ACESSE COM</span>
+      </div>
 
-      <button type="button" class="btn-biometric" onclick="handleLogin()">
+      <button type="button" class="btn-biometric" onclick="tryLogin()">
         <i class="fa-solid fa-fingerprint" style="color: #2563eb; font-size: 18px;"></i> Biometria / FaceID
       </button>
 
-      <p style="margin-top: 24px; font-size: 12px; color: #63646c;">Senha padrão: <strong style="color:#fff">admin123</strong></p>
+      <p class="demo-hint">Senha padrão para demonstração: <strong>admin123</strong></p>
     </div>
   </div>
 
-  <!-- DASHBOARD -->
-  <div id="dashboard-screen" class="screen hidden">
+  <!-- DASHBOARD PRINCIPAL -->
+  <div id="dashboard-screen" class="view-screen hidden">
     <div class="app-container">
+      <!-- MENU LATERAL -->
       <div class="sidebar">
         <div class="brand">
-          <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
-          <div>
-            <h2 style="font-size: 14px; color: #fff;">Cofre Blindado</h2>
-            <span style="font-size: 11px; color: #10b981;"><i class="fa-solid fa-circle" style="font-size: 8px;"></i> Protegido</span>
+          <div class="brand-icon">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div class="brand-info">
+            <h2>Cofre Blindado</h2>
+            <span><i class="fa-solid fa-circle" style="font-size: 8px;"></i> AES-256 Protegido</span>
           </div>
         </div>
-        <ul class="nav-list" id="sidebar-menu">
-          <li class="nav-item active" data-target="credenciais"><i class="fa-solid fa-key"></i> Credenciais</li>
-          <li class="nav-item" data-target="notas"><i class="fa-solid fa-sticky-note"></i> Notas Secretas</li>
-          <li class="nav-item" data-target="documentos"><i class="fa-solid fa-folder"></i> Documentos</li>
-          <li class="nav-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Bloquear</li>
+
+        <ul class="nav-list">
+          <li class="nav-item active" onclick="switchTab('credenciais', this)"><i class="fa-solid fa-key"></i> Credenciais</li>
+          <li class="nav-item" onclick="switchTab('notas', this)"><i class="fa-solid fa-sticky-note"></i> Notas Secretas</li>
+          <li class="nav-item" onclick="switchTab('documentos', this)"><i class="fa-solid fa-folder"></i> Documentos</li>
+          <li class="nav-item" onclick="lockVault()"><i class="fa-solid fa-right-from-bracket"></i> Bloquear</li>
         </ul>
       </div>
 
+      <!-- CONTEÚDO PRINCIPAL -->
       <div class="main-content">
         <div class="header-area">
-          <div>
-            <h1 id="section-title" style="font-size:20px; color:#fff;">Gestor de Credenciais</h1>
-            <p id="section-subtitle" style="font-size:12px; color:#71727a;">Guarde e gira as suas senhas em segurança</p>
+          <div class="header-title">
+            <h1 id="sec-title">Gestor de Credenciais</h1>
+            <p id="sec-subtitle">Guarde e gira as suas senhas em segurança</p>
           </div>
-          <button id="btn-action-main" class="btn-add" onclick="primaryAction()"><i class="fa-solid fa-plus"></i> Nova Credencial</button>
+          <button class="btn-add" id="btn-add-item" onclick="addNewItem()"><i class="fa-solid fa-plus"></i> Nova Credencial</button>
         </div>
 
-        <div class="search-box" id="search-box-container">
+        <div class="search-box">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" class="search-input" placeholder="Pesquisar..." />
+          <input type="text" class="search-input" id="search-input" placeholder="Pesquisar..." oninput="filterItems()" />
         </div>
 
-        <div class="cards-list" id="content-list">
-          <!-- Conteúdo dinâmico preenchido via JS -->
+        <div class="cards-list" id="items-list">
+          <!-- Renderizado via JavaScript -->
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    let currentTab = 'credenciais';
-    let database = {
+    let activeTab = 'credenciais';
+    
+    // Dados iniciais armazenados localmente
+    let vaultData = JSON.parse(localStorage.getItem('my_vault_data')) || {
       credenciais: [
-        { name: 'Conta Bancária', user: 'usuario.silva', secret: '123456' },
-        { name: 'E-mail Principal', user: 'contato@cofre.com', secret: 'minhasenha' }
+        { id: 1, title: 'Conta Bancária', sub: 'usuario.silva', secret: 'Senha123!' },
+        { id: 2, title: 'E-mail Principal', sub: 'contato@cofre.com', secret: 'OutraSenha99' }
       ],
       notas: [
-        { name: 'Ideias de Projetos', user: 'Nota Pessoal', secret: 'Lançar o aplicativo na Google Play Store este mês.' }
+        { id: 3, title: 'Ideias do App', sub: 'Nota Pessoal', secret: 'Lançar versão final esta semana.' }
       ],
       documentos: [
-        { name: 'Passaporte', user: 'Documento Oficial', secret: 'BR-987654321' }
+        { id: 4, title: 'Passaporte', sub: 'Documento ID', secret: 'AB-12345678' }
       ]
     };
 
-    function togglePwd() {
-      const f = document.getElementById('master-pwd');
-      const i = document.getElementById('pwd-toggle');
-      if (f.type === 'password') {
-        f.type = 'text';
-        i.className = 'fa-regular fa-eye toggle-pwd';
+    function saveData() {
+      localStorage.setItem('my_vault_data', JSON.stringify(vaultData));
+    }
+
+    function togglePasswordLogin() {
+      const field = document.getElementById('master-pwd');
+      const icon = document.getElementById('pwd-toggle');
+      if (field.type === 'password') {
+        field.type = 'text';
+        icon.className = 'fa-regular fa-eye toggle-pwd';
       } else {
-        f.type = 'password';
-        i.className = 'fa-regular fa-eye-slash toggle-pwd';
+        field.type = 'password';
+        icon.className = 'fa-regular fa-eye-slash toggle-pwd';
       }
     }
 
-    function handleLogin() {
-      document.getElementById('login-screen').classList.add('hidden');
-      document.getElementById('dashboard-screen').classList.remove('hidden');
-      renderSection('credenciais');
+    function tryLogin() {
+      const pwd = document.getElementById('master-pwd').value;
+      if (pwd === 'admin123') {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('dashboard-screen').classList.remove('hidden');
+        renderList();
+      } else {
+        alert('Chave Mestra incorreta! Use: admin123');
+      }
     }
 
-    function logout() {
+    function lockVault() {
       document.getElementById('dashboard-screen').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('master-pwd').value = 'admin123';
     }
 
-    // Configurar cliques do menu lateral
-    document.querySelectorAll('.nav-item[data-target]').forEach(item => {
-      item.addEventListener('click', function() {
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        this.classList.add('active');
-        renderSection(this.getAttribute('data-target'));
-      });
-    });
+    function switchTab(tabName, element) {
+      activeTab = tabName;
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      if(element) element.classList.add('active');
 
-    function renderSection(tab) {
-      currentTab = tab;
-      const title = document.getElementById('section-title');
-      const subtitle = document.getElementById('section-subtitle');
-      const btn = document.getElementById('btn-action-main');
-      const list = document.getElementById('content-list');
+      const titleEl = document.getElementById('sec-title');
+      const subEl = document.getElementById('sec-subtitle');
+      const btnEl = document.getElementById('btn-add-item');
 
-      list.innerHTML = '';
-
-      if (tab === 'credenciais') {
-        title.innerText = 'Gestor de Credenciais';
-        subtitle.innerText = 'Guarde e gira as suas senhas em segurança';
-        btn.innerHTML = '<i class="fa-solid fa-plus"></i> Nova Credencial';
-      } else if (tab === 'notas') {
-        title.innerText = 'Notas Secretas';
-        subtitle.innerText = 'Informações confidenciais e blocos de texto';
-        btn.innerHTML = '<i class="fa-solid fa-plus"></i> Nova Nota';
-      } else if (tab === 'documentos') {
-        title.innerText = 'Documentos';
-        subtitle.innerText = 'Ficheiros e registos importantes guardados';
-        btn.innerHTML = '<i class="fa-solid fa-plus"></i> Novo Documento';
+      if (tabName === 'credenciais') {
+        titleEl.innerText = 'Gestor de Credenciais';
+        subEl.innerText = 'Guarde e gira as suas senhas em segurança';
+        btnEl.innerHTML = '<i class="fa-solid fa-plus"></i> Nova Credencial';
+      } else if (tabName === 'notas') {
+        titleEl.innerText = 'Notas Secretas';
+        subEl.innerText = 'Blocos de texto confidenciais protegidos';
+        btnEl.innerHTML = '<i class="fa-solid fa-plus"></i> Nova Nota';
+      } else if (tabName === 'documentos') {
+        titleEl.innerText = 'Documentos';
+        subEl.innerText = 'Códigos e registos de documentos importantes';
+        btnEl.innerHTML = '<i class="fa-solid fa-plus"></i> Novo Documento';
       }
 
-      database[tab].forEach((item, index) => {
-        const initial = item.name.charAt(0).toUpperCase();
-        list.innerHTML += `
-          <div class="cred-card">
+      document.getElementById('search-input').value = '';
+      renderList();
+    }
+
+    function renderList(filter = '') {
+      const container = document.getElementById('items-list');
+      container.innerHTML = '';
+
+      let items = vaultData[activeTab] || [];
+      if (filter) {
+        items = items.filter(i => i.title.toLowerCase().includes(filter.toLowerCase()) || i.sub.toLowerCase().includes(filter.toLowerCase()));
+      }
+
+      if (items.length === 0) {
+        container.innerHTML = '<p style="color: #666; font-size: 13px; text-align: center; padding: 20px;">Nenhum registo encontrado.</p>';
+        return;
+      }
+
+      items.forEach((item) => {
+        const initial = item.title.charAt(0).toUpperCase();
+        const html = `
+          <div class="cred-card" id="card-${item.id}">
             <div class="cred-info">
               <div class="avatar-icon">${initial}</div>
-              <div>
-                <h3 style="font-size:14px; color:#fff;">${item.name}</h3>
-                <p style="font-size:12px; color:#71727a;">${item.user}</p>
+              <div class="cred-text">
+                <h3>${item.title}</h3>
+                <p>${item.sub}</p>
               </div>
             </div>
             <div class="cred-actions">
-              <span class="pwd-mask">••••••••••••</span>
-              <i class="fa-regular fa-eye action-icon" onclick="alert('Conteúdo: ${item.secret}')" title="Ver segredo"></i>
-              <i class="fa-regular fa-copy action-icon" onclick="alert('Copiado para a área de transferência!')" title="Copiar"></i>
-              <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem('${tab}', ${index})" title="Eliminar"></i>
+              <span class="pwd-mask" id="mask-${item.id}">••••••••••••</span>
+              <i class="fa-regular fa-eye action-icon" onclick="toggleSecret(${item.id}, '${item.secret}')" title="Mostrar/Ocultar"></i>
+              <i class="fa-regular fa-copy action-icon" onclick="copySecret('${item.secret}')" title="Copiar"></i>
+              <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem(${item.id})" title="Eliminar"></i>
             </div>
           </div>
         `;
+        container.insertAdjacentHTML('beforeend', html);
       });
     }
 
-    function primaryAction() {
-      const name = prompt('Nome / Título:');
-      const user = prompt('Subtítulo / Utilizador:');
-      const secret = prompt('Segredo / Senha / Nota:');
-      if (name && secret) {
-        database[currentTab].push({ name, user: user || '', secret });
-        renderSection(currentTab);
+    function filterItems() {
+      const val = document.getElementById('search-input').value;
+      renderList(val);
+    }
+
+    function toggleSecret(id, secret) {
+      const maskEl = document.getElementById(`mask-${id}`);
+      if (maskEl.innerText === '••••••••••••') {
+        maskEl.innerText = secret;
+        maskEl.style.letterSpacing = 'normal';
+        maskEl.style.color = '#10b981';
+      } else {
+        maskEl.innerText = '••••••••••••';
+        maskEl.style.letterSpacing = '2px';
+        maskEl.style.color = '#8e8f96';
       }
     }
 
-    function deleteItem(tab, index) {
-      if (confirm('Tem certeza que deseja eliminar este item?')) {
-        database[tab].splice(index, 1);
-        renderSection(tab);
+    function copySecret(secret) {
+      navigator.clipboard.writeText(secret).then(() => {
+        alert('Segredo copiado para a área de transferência!');
+      }).catch(() => {
+        alert('Erro ao copiar.');
+      });
+    }
+
+    function addNewItem() {
+      const title = prompt('Título (ex: Banco, Netflix, Notas):');
+      const sub = prompt('Subtítulo / Utilizador / E-mail:');
+      const secret = prompt('Segredo / Senha / Conteúdo:');
+
+      if (title && secret) {
+        const newItem = {
+          id: Date.now(),
+          title: title,
+          sub: sub || 'Pessoal',
+          secret: secret
+        };
+        vaultData[activeTab].push(newItem);
+        saveData();
+        renderList();
+      }
+    }
+
+    function deleteItem(id) {
+      if (confirm('Tem certeza de que deseja eliminar este item?')) {
+        vaultData[activeTab] = vaultData[activeTab].filter(i => i.id !== id);
+        saveData();
+        renderList();
       }
     }
   </script>
