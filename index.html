@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cofre Blindado Zero-Knowledge</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              500: '#0284c7',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Babel for JSX compilation -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    /* Custom scrollbar for clean dark UI */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-cyan-500 selection:text-slate-950">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- CRYPTO ENGINE (Web Crypto API) ---
+    const PBKDF2_ITERATIONS = 600000;
+
+    // Helper: Buffer to Hex / Hex to Buffer
+    const bufToHex = buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    const hexToBuf = hex => new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+
+    // Derive Encryption Key using PBKDF2
+    async function deriveKey(masterPassword, saltHex) {
+      const enc = new TextEncoder();
+      const salt = hexToBuf(saltHex);
+      const keyMaterial = await window.crypto.subtle.importKey(
+        "raw",
+        enc.encode(masterPassword),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+
+      return await window.crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: salt,
+          iterations: PBKDF2_ITERATIONS,
+          hash: "SHA-256"
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    // Encrypt Data with AES-256-GCM
+    async function encryptData(cryptoKey, plaintextObj) {
+      const enc = new TextEncoder();
+      const iv = window.crypto.getRandomValues(new Uint8Array(12));
+      const encodedData = enc.encode(JSON.stringify(plaintextObj));
+
+      const ciphertext = await window.crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        cryptoKey,
+        encodedData
+      );
+
+      return {
+        ciphertextHex: bufToHex(ciphertext),
+        ivHex: bufToHex(iv)
+      };
+    }
+
+    // Decrypt Data with AES-256-GCM
+    async function decryptData(cryptoKey, ciphertextHex, ivHex) {
+      const dec = new TextDecoder();
+      const ciphertext = hexToBuf(ciphertextHex);
+      const iv = hexToBuf(ivHex);
+
+      const decrypted = await window.crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv },
+        cryptoKey,
+        ciphertext
+      );
+
+      return JSON.parse(dec.decode(decrypted));
+    }
+
+    // --- MAIN COMPONENT ---
+    function App() {
+      const [vaultState, setVaultState] = useState('UNINITIALIZED'); // UNINITIALIZED, LOCKED, UNLOCKED
+      const [cryptoKey, setCryptoKey] = useState(null);
+      const [vaultItems, setVaultItems] = useState([]);
+      const [salt, setSalt] = useState('');
+      
+      // Form fields
+      const [passwordInput, setPasswordInput] = useState('');
+      const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
+      const [errorMsg, setErrorMsg] = useState('');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [filterCategory, setFilterCategory] = useState('ALL');
+
+      // Modal State
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      const [editingItem, setEditingItem] = useState(null);
+      const [itemType, setItemType] = useState('PASSWORD'); // PASSWORD, NOTE, CARD
+      const [itemName, setItemName] = useState('');
+      const [itemUsername, setItemUsername] = useState('');
+      const [itemPassword, setItemPassword] = useState('');
+      const [itemNote, setItemNote] = useState('');
+
+      // Auto-Lock Timer
+      const [autoLockMinutes, setAutoLockMinutes] = useState(15);
+      const activityTimer = useRef(null);
+
+      // WebAuthn Support check
+      const [hasWebAuthn, setHasWebAuthn] = useState(false);
+
+      useEffect(() => {
+        if (window.PublicKeyCredential) {
+          setHasWebAuthn(true);
+        }
+
+        // Check if vault is initialized
+        const storedSalt = localStorage.getItem('vault_salt');
+        const storedVault = localStorage.getItem('vault_data');
+
+        if (storedSalt && storedVault) {
+          setSalt(storedSalt);
+          setVaultState('LOCKED');
+        } else {
+          setVaultState('UNINITIALIZED');
+        }
+      }, []);
+
+      // Auto-Lock Activity Reset
+      useEffect(() => {
+        if (vaultState !== 'UNLOCKED') return;
+
+        const resetTimer = () => {
+          if (activityTimer.current) clearTimeout(activityTimer.current);
+          activityTimer.current = setTimeout(() => {
+            lockVault();
+          }, autoLockMinutes * 60 * 1000);
+        };
+
+        window.addEventListener('mousemove', resetTimer);
+        window.addEventListener('keydown', resetTimer);
+        resetTimer();
+
+        return () => {
+          window.removeEventListener('mousemove', resetTimer);
+          window.removeEventListener('keydown', resetTimer);
+          if (activityTimer.current) clearTimeout(activityTimer.current);
+        };
+      }, [vaultState, autoLockMinutes]);
+
+      // Re-initialize Lucide Icons on DOM updates
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      });
+
+      // Handle Setup
+      const handleSetupVault = async (e) => {
+        e.preventDefault();
+        setErrorMsg('');
+
+        if (passwordInput.length < 8) {
+          setErrorMsg('A senha mestra deve ter no mínimo 8 caracteres.');
+          return;
+        }
+        if (passwordInput !== confirmPasswordInput) {
+          setErrorMsg('As senhas não coincidem.');
+          return;
+        }
+
+        try {
+          const newSalt = bufToHex(window.crypto.getRandomValues(new Uint8Array(16)));
+          const derivedKey = await deriveKey(passwordInput, newSalt);
+
+          const initialData = [];
+          const encrypted = await encryptData(derivedKey, initialData);
+
+          localStorage.setItem('vault_salt', newSalt);
+          localStorage.setItem('vault_data', JSON.stringify(encrypted));
+
+          setSalt(newSalt);
+          setCryptoKey(derivedKey);
+          setVaultItems(initialData);
+          setVaultState('UNLOCKED');
+          setPasswordInput('');
+          setConfirmPasswordInput('');
+        } catch (err) {
+          console.error(err);
+          setErrorMsg('Erro ao inicializar o cofre criptografado.');
+        }
+      };
+
+      // Handle Unlock
+      const handleUnlockVault = async (e) => {
+        e.preventDefault();
+        setErrorMsg('');
+
+        try {
+          const storedSalt = localStorage.getItem('vault_salt');
+          const encryptedRaw = localStorage.getItem('vault_data');
+
+          if (!storedSalt || !encryptedRaw) {
+            setErrorMsg('Cofre não localizado.');
+            return;
+          }
+
+          const encryptedObj = JSON.parse(encryptedRaw);
+          const derivedKey = await deriveKey(passwordInput, storedSalt);
+          
+          const decryptedData = await decryptData(derivedKey, encryptedObj.ciphertextHex, encryptedObj.ivHex);
+
+          setCryptoKey(derivedKey);
+          setVaultItems(decryptedData);
+          setVaultState('UNLOCKED');
+          setPasswordInput('');
+        } catch (err) {
+          console.error(err);
+          setErrorMsg('Senha Mestra incorreta ou dados corrompidos.');
+        }
+      };
+
+      // Lock Vault
+      const lockVault = () => {
+        setCryptoKey(null);
+        setVaultItems([]);
+        setVaultState('LOCKED');
+      };
+
+      // Reset Vault (Factory Reset)
+      const resetVault = () => {
+        if (confirm("ATENÇÃO: Isso apagará TODOS os dados do cofre irreversivelmente. Deseja prosseguir?")) {
+          localStorage.removeItem('vault_salt');
+          localStorage.removeItem('vault_data');
+          setCryptoKey(null);
+          setVaultItems([]);
+          setVaultState('UNINITIALIZED');
+        }
+      };
+
+      // Save or Update Item
+      const saveVaultItem = async () => {
+        if (!itemName) {
+          alert('Por favor, insira um nome para o item.');
+          return;
+        }
+
+        const newItem = {
+          id: editingItem ? editingItem.id : Date.now().toString(),
+          type: itemType,
+          name: itemName,
+          username: itemUsername,
+          password: itemPassword,
+          note: itemNote,
+          updatedAt: new Date().toISOString()
+        };
+
+        let updatedList;
+        if (editingItem) {
+          updatedList = vaultItems.map(item => item.id === editingItem.id ? newItem : item);
+        } else {
+          updatedList = [...vaultItems, newItem];
+        }
+
+        try {
+          const encrypted = await encryptData(cryptoKey, updatedList);
+          localStorage.setItem('vault_data', JSON.stringify(encrypted));
+          setVaultItems(updatedList);
+          closeModal();
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao criptografar e salvar o item.');
+        }
+      };
+
+      // Delete Item
+      const deleteVaultItem = async (id) => {
+        if (!confirm('Deseja realmente remover este item do cofre?')) return;
+
+        const updatedList = vaultItems.filter(item => item.id !== id);
+
+        try {
+          const encrypted = await encryptData(cryptoKey, updatedList);
+          localStorage.setItem('vault_data', JSON.stringify(encrypted));
+          setVaultItems(updatedList);
+        } catch (err) {
+          console.error(err);
+          alert('Erro ao atualizar o cofre.');
+        }
+      };
+
+      const openModal = (item = null) => {
+        if (item) {
+          setEditingItem(item);
+          setItemType(item.type);
+          setItemName(item.name || '');
+          setItemUsername(item.username || '');
+          setItemPassword(item.password || '');
+          setItemNote(item.note || '');
+        } else {
+          setEditingItem(null);
+          setItemType('PASSWORD');
+          setItemName('');
+          setItemUsername('');
+          setItemPassword('');
+          setItemNote('');
+        }
+        setIsModalOpen(true);
+      };
+
+      const closeModal = () => {
+        setIsModalOpen(false);
+        setEditingItem(null);
+      };
+
+      // Password Generator
+      const generatePassword = () => {
+        const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+        let pass = "";
+        const array = new Uint32Array(20);
+        window.crypto.getRandomValues(array);
+        for (let i = 0; i < 20; i++) {
+          pass += chars[array[i] % chars.length];
+        }
+        setItemPassword(pass);
+      };
+
+      // Filtered Items
+      const filteredItems = vaultItems.filter(item => {
+        const matchesCategory = filterCategory === 'ALL' || item.type === filterCategory;
+        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              (item.username && item.username.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchesCategory && matchesSearch;
+      });
+
+      // --- RENDERING VIEWS ---
+
+      if (vaultState === 'UNINITIALIZED') {
+        return (
+          <div className="min-h-screen flex items-center justify-center p-4 bg-slate-950">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl space-y-6">
+              <div className="text-center space-y-2">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cyan-500/10 text-cyan-400 mb-2">
+                  <i data-lucide="shield-check" class="w-8 h-8"></i>
+                </div>
+                <h1 className="text-2xl font-bold text-slate-50">Criar Cofre Zero-Knowledge</h1>
+                <p className="text-sm text-slate-400">
+                  Defina sua Senha Mestra. Ela <b>nunca</b> sairá do seu dispositivo e é a única forma de recuperar seus dados.
+                </p>
+              </div>
+
+              {errorMsg && (
+                <div className="bg-red-500/10 border border-red-500/50 text-red-400 text-xs p-3 rounded-lg text-center">
+                  {errorMsg}
+                </div>
+              )}
+
+              <form onSubmit={handleSetupVault} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    Senha Mestra
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 focus:outline-none focus:border-cyan-500 transition"
+                    placeholder="••••••••••••"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    Confirmar Senha Mestra
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 focus:outline-none focus:border-cyan-500 transition"
+                    placeholder="••••••••••••"
+                    value={confirmPasswordInput}
+                    onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                  />
+                </div>
+
+                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-1">
+                  <div className="font-semibold text-cyan-400 flex items-center gap-1">
+                    <i data-lucide="lock" class="w-3.5 h-3.5"></i> Criptografia de Ponta
+                  </div>
+                  <p>AES-256-GCM + PBKDF2 (600k iterações). Os dados são cifrados antes de serem gravados.</p>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2"
+                >
+                  <i data-lucide="key" class="w-4 h-4"></i> Criar Cofre Criptografado
+                </button>
+              </form>
+            </div>
+          </div>
+        );
+      }
+
+      if (vaultState === 'LOCKED') {
+        return (
+          <div className="min-h-screen flex items-center justify-center p-4 bg-slate-950">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md w-full shadow-2xl space-y-6">
+              <div className="text-center space-y-2">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cyan-500/10 text-cyan-400 mb-2">
+                  <i data-lucide="lock" class="w-8 h-8"></i>
+                </div>
+                <h1 className="text-2xl font-bold text-slate-50">Cofre Bloqueado</h1>
+                <p className="text-sm text-slate-400">
+                  Digite sua Senha Mestra para descriptografar os dados na memória RAM.
+                </p>
+              </div>
+
+              {errorMsg && (
+                <div className="bg-red-500/10 border border-red-500/50 text-red-400 text-xs p-3 rounded-lg text-center">
+                  {errorMsg}
+                </div>
+              )}
+
+              <form onSubmit={handleUnlockVault} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                    Senha Mestra
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    autoFocus
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 focus:outline-none focus:border-cyan-500 transition"
+                    placeholder="••••••••••••"
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2"
+                >
+                  <i data-lucide="unlock" class="w-4 h-4"></i> Desbloquear Cofre
+                </button>
+              </form>
+
+              <div className="pt-4 border-t border-slate-800 text-center">
+                <button
+                  onClick={resetVault}
+                  className="text-xs text-red-400 hover:text-red-300 transition underline"
+                >
+                  Esqueceu a senha? Resetar Cofre (Apagará dados)
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // UNLOCKED STATE
+      return (
+        <div className="min-h-screen flex flex-col">
+          {/* Header */}
+          <header className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+            <div className="flex items-center gap-3">
+              <div className="bg-cyan-500/10 text-cyan-400 p-2 rounded-lg">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <h1 className="font-bold text-slate-100 leading-tight">Cofre Blindado</h1>
+                <span className="text-xs text-emerald-400 flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Descriptografado em RAM
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => openModal()}
+                className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-2"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i> Novo Item
+              </button>
+              <button
+                onClick={lockVault}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 border border-slate-700"
+              >
+                <i data-lucide="lock" class="w-4 h-4"></i> Bloquear
+              </button>
+            </div>
+          </header>
+
+          {/* Body Content */}
+          <div className="flex-1 max-w-6xl w-full mx-auto p-6 space-y-6">
+            
+            {/* Controls Bar */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+              <div className="relative w-full sm:w-80">
+                <input
+                  type="text"
+                  placeholder="Pesquisar itens..."
+                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-cyan-500 transition"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <div className="absolute left-3 top-3 text-slate-500">
+                  <i data-lucide="search" class="w-4 h-4"></i>
+                </div>
+              </div>
+
+              <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+                {['ALL', 'PASSWORD', 'NOTE', 'CARD'].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setFilterCategory(cat)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
+                      filterCategory === cat
+                        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                        : 'bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-800'
+                    }`}
+                  >
+                    {cat === 'ALL' && 'Todos'}
+                    {cat === 'PASSWORD' && 'Senhas'}
+                    {cat === 'NOTE' && 'Notas Seguras'}
+                    {cat === 'CARD' && 'Cartões'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Items Grid */}
+            {filteredItems.length === 0 ? (
+              <div className="text-center py-16 border border-dashed border-slate-800 rounded-2xl">
+                <i data-lucide="inbox" class="w-12 h-12 text-slate-600 mx-auto mb-3"></i>
+                <p className="text-slate-400 text-sm">Nenhum item localizado no cofre.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-2">
+                          <span className="p-2 bg-slate-800 rounded-lg text-cyan-400">
+                            {item.type === 'PASSWORD' && <i data-lucide="key" class="w-4 h-4"></i>}
+                            {item.type === 'NOTE' && <i data-lucide="file-text" class="w-4 h-4"></i>}
+                            {item.type === 'CARD' && <i data-lucide="credit-card" class="w-4 h-4"></i>}
+                          </span>
+                          <h3 className="font-bold text-slate-100 truncate max-w-[180px]">{item.name}</h3>
+                        </div>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => openModal(item)}
+                            className="p-1.5 text-slate-400 hover:text-slate-200 transition rounded-lg hover:bg-slate-800"
+                          >
+                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                          </button>
+                          <button
+                            onClick={() => deleteVaultItem(item.id)}
+                            className="p-1.5 text-slate-400 hover:text-red-400 transition rounded-lg hover:bg-slate-800"
+                          >
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      {item.username && (
+                        <p className="text-xs text-slate-400 truncate">
+                          <b>Usuário:</b> {item.username}
+                        </p>
+                      )}
+
+                      {item.password && (
+                        <div className="flex items-center justify-between bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
+                          <span className="text-xs font-mono text-slate-300">••••••••••••</span>
+                          <button
+                            onClick={() => navigator.clipboard.writeText(item.password)}
+                            className="text-xs text-cyan-400 hover:underline flex items-center gap-1"
+                          >
+                            <i data-lucide="copy" class="w-3 h-3"></i> Copiar
+                          </button>
+                        </div>
+                      )}
+
+                      {item.note && (
+                        <p className="text-xs text-slate-400 line-clamp-3 bg-slate-950 p-2.5 rounded-lg border border-slate-800 font-mono whitespace-pre-wrap">
+                          {item.note}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="text-[10px] text-slate-500 pt-2 border-t border-slate-800/60 flex justify-between">
+                      <span>Atualizado em:</span>
+                      <span>{new Date(item.updatedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Modal Create/Edit */}
+          {isModalOpen && (
+            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-5">
+                <div className="flex justify-between items-center pb-3 border-b border-slate-800">
+                  <h2 className="font-bold text-slate-100">
+                    {editingItem ? 'Editar Item' : 'Novo Item no Cofre'}
+                  </h2>
+                  <button onClick={closeModal} className="text-slate-400 hover:text-slate-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Tipo</label>
+                    <select
+                      value={itemType}
+                      onChange={(e) => setItemType(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200"
+                    >
+                      <option value="PASSWORD">Senha / Conta</option>
+                      <option value="NOTE">Nota Segura</option>
+                      <option value="CARD">Cartão de Crédito</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Título / Nome</label>
+                    <input
+                      type="text"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200"
+                      placeholder="Ex: Google, GitHub, Cartão Principal..."
+                      value={itemName}
+                      onChange={(e) => setItemName(e.target.value)}
+                    />
+                  </div>
+
+                  {(itemType === 'PASSWORD' || itemType === 'CARD') && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Usuário / Titular</label>
+                      <input
+                        type="text"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200"
+                        placeholder="email@exemplo.com"
+                        value={itemUsername}
+                        onChange={(e) => setItemUsername(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {itemType === 'PASSWORD' && (
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Senha</label>
+                        <button
+                          type="button"
+                          onClick={generatePassword}
+                          className="text-xs text-cyan-400 hover:underline flex items-center gap-1"
+                        >
+                          <i data-lucide="refresh-cw" class="w-3 h-3"></i> Gerar Segura
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 font-mono"
+                        placeholder="Sua senha secreta"
+                        value={itemPassword}
+                        onChange={(e) => setItemPassword(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Anotações / Detalhes</label>
+                    <textarea
+                      rows="4"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 font-mono"
+                      placeholder="Códigos de recuperação, dados adicionais..."
+                      value={itemNote}
+                      onChange={(e) => setItemNote(e.target.value)}
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                  <button
+                    onClick={closeModal}
+                    className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-800 transition"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={saveVaultItem}
+                    className="px-4 py-2 rounded-xl text-sm font-bold bg-cyan-600 hover:bg-cyan-500 text-slate-950 transition"
+                  >
+                    Salvar no Cofre
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Render App
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
