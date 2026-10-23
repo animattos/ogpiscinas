@@ -44,16 +44,9 @@
     }
     .input-field:focus { border-color: #2563eb; }
     
-    /* Olhinho perfeitamente centrado na vertical */
     .toggle-pwd { 
-      position: absolute; 
-      right: 16px; 
-      top: 50%; 
-      transform: translateY(-50%); 
-      color: #71727a; 
-      cursor: pointer; 
-      font-size: 16px; 
-      padding: 4px;
+      position: absolute; right: 16px; top: 50%; transform: translateY(-50%); 
+      color: #71727a; cursor: pointer; font-size: 16px; padding: 4px;
     }
     .toggle-pwd:hover { color: #fff; }
 
@@ -79,13 +72,7 @@
     .app-container { display: flex; flex-direction: column; width: 100%; max-width: 480px; gap: 16px; margin: 0 auto; }
     
     .mobile-header-card {
-      background: #141518;
-      border: 1px solid #232428;
-      border-radius: 16px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      background: #141518; border: 1px solid #232428; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 16px;
     }
 
     .top-row { display: flex; align-items: center; justify-content: space-between; }
@@ -98,18 +85,9 @@
     .brand-info span { font-size: 11px; color: #10b981; display: flex; align-items: center; gap: 4px; }
 
     .btn-logout-top {
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #ef4444;
-      padding: 8px 14px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: 0.2s;
+      background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444;
+      padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; transition: 0.2s;
     }
     .btn-logout-top:hover { background: #ef4444; color: #fff; }
 
@@ -154,6 +132,64 @@
     .action-icons-group { display: flex; gap: 12px; align-items: center; }
     .action-icon { color: #71727a; cursor: pointer; font-size: 14px; transition: color 0.2s; padding: 4px; }
     .action-icon:hover { color: #fff; }
+
+    /* ESTILO DO EDITOR DE NOTAS (BLOCO DE NOTAS) */
+    .note-editor-container {
+      background: #111214;
+      border: 1px solid #232428;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .note-title-input {
+      width: 100%;
+      padding: 12px;
+      background: #18191c;
+      border: 1px solid #28292d;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      outline: none;
+    }
+    .note-textarea {
+      width: 100%;
+      min-height: 250px;
+      padding: 12px;
+      background: #18191c;
+      border: 1px solid #28292d;
+      border-radius: 8px;
+      color: #e0e0e0;
+      font-size: 14px;
+      line-height: 1.5;
+      outline: none;
+      resize: vertical;
+    }
+    .note-editor-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-save-note {
+      flex: 1;
+      padding: 10px;
+      background: #2563eb;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-cancel-note {
+      padding: 10px 16px;
+      background: #28292d;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -234,11 +270,12 @@
           <i class="fa-solid fa-plus"></i> Nova Credencial
         </button>
 
-        <div class="search-box">
+        <div class="search-box" id="search-box-wrap">
           <i class="fa-solid fa-magnifying-glass"></i>
           <input type="text" class="search-input" id="search-input" placeholder="Pesquisar..." oninput="filterItems()" />
         </div>
 
+        <!-- LISTA OU EDITOR DE NOTAS -->
         <div class="cards-list" id="items-list"></div>
       </div>
 
@@ -249,6 +286,7 @@
 
   <script>
     let activeTab = 'credenciais';
+    let editingNoteId = null;
     
     let vaultData = JSON.parse(localStorage.getItem('my_vault_data')) || {
       credenciais: [
@@ -256,7 +294,7 @@
         { id: 2, title: 'E-mail Principal', sub: 'contato@cofre.com', secret: 'OutraSenha99' }
       ],
       notas: [
-        { id: 3, title: 'Ideias do App', sub: 'Nota Pessoal', secret: 'Lançar versão final esta semana.' }
+        { id: 3, title: 'Ideias do App', sub: 'Nota Pessoal', secret: 'Lançar versão final esta semana com suporte completo a PWAs e backups locais seguros.' }
       ],
       documentos: [
         { id: 4, title: 'Passaporte.pdf', sub: 'Documento PDF', fileData: '', isFile: true }
@@ -323,12 +361,16 @@
 
     function switchTab(tabName, element) {
       activeTab = tabName;
+      editingNoteId = null; // Sai do modo de edição se trocar de aba
       document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
       if(element) element.classList.add('active');
 
       const titleEl = document.getElementById('sec-title');
       const subEl = document.getElementById('sec-subtitle');
       const btnEl = document.getElementById('btn-add-item');
+      const searchBox = document.getElementById('search-box-wrap');
+
+      searchBox.style.display = 'block';
 
       if (tabName === 'credenciais') {
         titleEl.innerText = 'Gestor de Credenciais';
@@ -336,7 +378,7 @@
         btnEl.innerHTML = '<i class="fa-solid fa-plus"></i> Nova Credencial';
       } else if (tabName === 'notas') {
         titleEl.innerText = 'Notas Secretas';
-        subEl.innerText = 'Blocos de texto confidenciais protegidos';
+        subEl.innerText = 'Blocos de texto para anotações longas';
         btnEl.innerHTML = '<i class="fa-solid fa-plus"></i> Nova Nota';
       } else if (tabName === 'documentos') {
         titleEl.innerText = 'Documentos';
@@ -350,11 +392,37 @@
 
     function renderList(filter = '') {
       const container = document.getElementById('items-list');
+      const searchBox = document.getElementById('search-box-wrap');
+      const btnEl = document.getElementById('btn-add-item');
       container.innerHTML = '';
+
+      // Se estiver a editar uma nota específica na aba de notas
+      if (activeTab === 'notas' && editingNoteId !== null) {
+        searchBox.style.display = 'none';
+        btnEl.style.display = 'none';
+        
+        const note = vaultData.notas.find(n => n.id === editingNoteId);
+        if (!note) return;
+
+        container.innerHTML = `
+          <div class="note-editor-container">
+            <input type="text" id="edit-note-title" class="note-title-input" value="${note.title}" placeholder="Título da nota..." />
+            <textarea id="edit-note-body" class="note-textarea" placeholder="Escreva o seu texto longo aqui...">${note.secret}</textarea>
+            <div class="note-editor-buttons">
+              <button class="btn-save-note" onclick="saveEditedNote(${note.id})"><i class="fa-solid fa-check"></i> Guardar Nota</button>
+              <button class="btn-cancel-note" onclick="cancelEditNote()">Cancelar</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      searchBox.style.display = 'block';
+      btnEl.style.display = 'flex';
 
       let items = vaultData[activeTab] || [];
       if (filter) {
-        items = items.filter(i => i.title.toLowerCase().includes(filter.toLowerCase()) || i.sub.toLowerCase().includes(filter.toLowerCase()));
+        items = items.filter(i => i.title.toLowerCase().includes(filter.toLowerCase()) || i.sub.toLowerCase().includes(filter.toLowerCase()) || (i.secret && i.secret.toLowerCase().includes(filter.toLowerCase())));
       }
 
       if (items.length === 0) {
@@ -367,7 +435,7 @@
         
         if (activeTab === 'documentos') {
           container.insertAdjacentHTML('beforeend', `
-            <div class="cred-card" id="card-${item.id}">
+            <div class="cred-card">
               <div class="cred-top-info">
                 <div class="avatar-icon"><i class="fa-solid fa-file-arrow-down"></i></div>
                 <div class="cred-text">
@@ -385,9 +453,30 @@
               </div>
             </div>
           `);
+        } else if (activeTab === 'notas') {
+          // Visualização em bloco de notas (mostra um resumo do texto)
+          const previewText = item.secret ? (item.secret.length > 60 ? item.secret.substring(0, 60) + '...' : item.secret) : 'Nota vazia...';
+          container.insertAdjacentHTML('beforeend', `
+            <div class="cred-card" style="cursor: pointer;" onclick="openNoteEditor(${item.id})">
+              <div class="cred-top-info">
+                <div class="avatar-icon"><i class="fa-solid fa-pen-nib"></i></div>
+                <div class="cred-text">
+                  <h3>${item.title}</h3>
+                  <p style="color: #aaa; margin-top: 4px; font-size: 13px;">${previewText}</p>
+                </div>
+              </div>
+              <div class="cred-actions" onclick="event.stopPropagation()">
+                <span style="font-size: 11px; color: #8e8f96;">Clique para editar</span>
+                <div class="action-icons-group">
+                  <i class="fa-regular fa-pen-to-square action-icon" onclick="openNoteEditor(${item.id})" title="Editar Nota"></i>
+                  <i class="fa-regular fa-trash-can action-icon" onclick="deleteItem(${item.id})" title="Eliminar"></i>
+                </div>
+              </div>
+            </div>
+          `);
         } else {
           container.insertAdjacentHTML('beforeend', `
-            <div class="cred-card" id="card-${item.id}">
+            <div class="cred-card">
               <div class="cred-top-info">
                 <div class="avatar-icon">${initial}</div>
                 <div class="cred-text">
@@ -429,7 +518,7 @@
 
     function copySecret(secret) {
       navigator.clipboard.writeText(secret).then(() => {
-        alert('Segredo copiado para a área de transferência!');
+        alert('Copiado para a área de transferência!');
       }).catch(() => {
         alert('Erro ao copiar.');
       });
@@ -438,6 +527,19 @@
     function addNewItem() {
       if (activeTab === 'documentos') {
         document.getElementById('file-selector').click();
+      } else if (activeTab === 'notas') {
+        const title = prompt('Título da Nova Nota:');
+        if (title) {
+          const newItem = {
+            id: Date.now(),
+            title: title,
+            sub: 'Nota Pessoal',
+            secret: ''
+          };
+          vaultData.notas.push(newItem);
+          saveData();
+          openNoteEditor(newItem.id);
+        }
       } else {
         const title = prompt('Título:');
         const sub = prompt('Subtítulo / Utilizador:');
@@ -455,6 +557,30 @@
           renderList();
         }
       }
+    }
+
+    function openNoteEditor(id) {
+      editingNoteId = id;
+      renderList();
+    }
+
+    function cancelEditNote() {
+      editingNoteId = null;
+      renderList();
+    }
+
+    function saveEditedNote(id) {
+      const newTitle = document.getElementById('edit-note-title').value;
+      const newBody = document.getElementById('edit-note-body').value;
+
+      const note = vaultData.notas.find(n => n.id === id);
+      if (note) {
+        note.title = newTitle || 'Nota sem título';
+        note.secret = newBody;
+        saveData();
+      }
+      editingNoteId = null;
+      renderList();
     }
 
     function handleFileSelected(event) {
@@ -503,6 +629,7 @@
     function deleteItem(id) {
       if (confirm('Tem certeza de que deseja eliminar este item?')) {
         vaultData[activeTab] = vaultData[activeTab].filter(i => i.id !== id);
+        if (editingNoteId === id) editingNoteId = null;
         saveData();
         renderList();
       }
